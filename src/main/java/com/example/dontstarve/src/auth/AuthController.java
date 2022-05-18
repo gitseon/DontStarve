@@ -41,7 +41,7 @@ public class AuthController {
     public BaseResponse<LoginRes> login(@RequestBody LoginDto loginDto) {
         // validation
         // email 값 존재 검사
-        if (loginDto.getId() == null) {
+        if (loginDto.getEmail() == null) {
             return new BaseResponse<>(POST_USERS_EMPTY_EMAIL);
         }
         /*// email 형식 검사

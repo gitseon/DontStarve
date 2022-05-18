@@ -1,4 +1,4 @@
-package com.example.dontstarve.src;
+package com.example.dontstarve.utils;
 
 import com.example.dontstarve.utils.JwtFilter;
 import com.example.dontstarve.utils.JwtTokenProvider;

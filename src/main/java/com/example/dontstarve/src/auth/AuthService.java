@@ -27,7 +27,7 @@ public class AuthService {
 
     // [POST] 로그인
     public LoginRes login(LoginDto loginDto) {
-        User user = authRepository.findById(loginDto.getId())
+        User user = authRepository.findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 id 입니다."));
         if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("잘못된 비밀번호입니다.");
