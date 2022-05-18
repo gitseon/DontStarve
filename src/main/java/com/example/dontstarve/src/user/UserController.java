@@ -22,9 +22,6 @@ public class UserController {
 
     @Autowired
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final UserRepository userRepository;
 
 
     /**
