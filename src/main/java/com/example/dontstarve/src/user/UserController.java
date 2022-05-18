@@ -15,9 +15,12 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static com.example.dontstarve.config.BaseResponseStatus.*;
+
 @RequiredArgsConstructor
 @RestController
 @Component
+@RequestMapping("/users")
 public class UserController {
 
     @Autowired
@@ -34,9 +37,15 @@ public class UserController {
         userService.save(infoDto);
         return "redirect:/login";
     }*/
-    @PostMapping("/users")
-    public int signUp(@RequestBody UserDto userDto) {
-        return userService.save(userDto);
+    @PostMapping("")
+    public BaseResponse<Integer> signUp(@RequestBody UserDto userDto) {
+
+        if (userDto.getEmail().equals(null) || userDto.getEmail().equals("")) {
+            return new BaseResponse<>(POST_USERS_EMPTY_EMAIL);
+        }
+
+        int idx = userService.save(userDto);
+        return new BaseResponse<>(idx);
     }
 
 
