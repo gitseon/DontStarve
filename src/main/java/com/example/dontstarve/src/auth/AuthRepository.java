@@ -10,6 +10,6 @@ import java.util.Optional;
 @Repository
 public interface AuthRepository extends JpaRepository<User, Integer> {
     // 회원조회 - 아이디 통해서 조회
-    Optional<User> findByEmail(String id);
+    User findByEmail(String email);
 
 }

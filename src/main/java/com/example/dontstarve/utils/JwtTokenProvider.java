@@ -44,14 +44,14 @@ public class JwtTokenProvider {
     }
 
     // JWT 토큰 생성
-    public String createToken(String userPk, String auth, int idx) {
+    public String createToken(String userPk, String auth, int userId) {
         Claims claims = Jwts.claims().setSubject(userPk); // JWT payload 에 저장되는 정보단위
         claims.put("auth", auth); // 정보는 key / value 쌍으로 저장된다.
         Date now = new Date();
         return Jwts.builder()
                 .setHeaderParam("type", "jwt")
                 .setClaims(claims) // 정보 저장
-                .claim("idx", idx)
+                .claim("userId", userId)
                 .setIssuedAt(now) // 토큰 발행 시간 정보
                 .setExpiration(new Date(System.currentTimeMillis() + tokenValidTime)) // set Expire Time
                 // new Date(now.getTime() + 30 * 60 * 1000L)
@@ -102,7 +102,7 @@ public class JwtTokenProvider {
      * @return int
      * @throws BaseException
      */
-    public int getUserIdx() throws BaseException {
+    public int getUserId() throws BaseException {
         // 1. JWT 추출
         String accessToken = getJwt();
         if (accessToken == null || accessToken.length() == 0) {

@@ -27,7 +27,7 @@ public class AuthProvider {
     // [GET] 자동로그인
     public AutoLoginRes autoLogIn() throws BaseException {
         try {
-            return new AutoLoginRes(jwtTokenProvider.getUserIdx());
+            return new AutoLoginRes(jwtTokenProvider.getUserId());
         } catch (Exception exception) {
             throw new BaseException(INVALID_JWT);
         }

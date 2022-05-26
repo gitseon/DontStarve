@@ -38,20 +38,48 @@ public class AuthController {
      */
     @ResponseBody
     @PostMapping("/login")
-    public BaseResponse<LoginRes> login(@RequestBody LoginDto loginDto) {
+    public BaseResponse<LoginRes> login(@RequestBody LoginDto loginDto) throws BaseException {
         // validation
         // email 값 존재 검사
         if (loginDto.getEmail() == null) {
             return new BaseResponse<>(POST_USERS_EMPTY_EMAIL);
         }
-        /*// email 형식 검사
-        if (!isRegexEmail(loginDto.getId())) {
-            return new BaseResponse<>(POST_USERS_INVALID_EMAIL);
-        }*/
 
         LoginRes loginRes = authService.login(loginDto);
         return new BaseResponse<>(loginRes);
     }
+
+    /**
+     * 소셜로그인 - 인가 코드 받기 (kakao) API
+     * [GET] /auth/kakao
+     *
+     */
+
+
+
+
+    /**
+     * 소셜로그인 - 토큰 발급 받기 (kakao) API
+     * [GET] /auth/kakao/token
+     *
+     */
+    @ResponseBody
+    @GetMapping("/kakao/token")
+    public BaseResponse<String> kakaoToken(String code) throws BaseException {
+        try {
+            // 토큰 발급
+            String accessToken = authService.getKakaoToken(code);
+
+            // 사용자 정보 가져오기 - 회원가입 진행
+            authService.createKakaoUser(accessToken);
+
+            return new BaseResponse<>("카카오 로그인 성공");
+
+        } catch (Exception exception) {
+            return new BaseResponse<>("카카오 로그인 실패");
+        }
+    }
+
 
     /**
      * 자동로그인 API
@@ -68,4 +96,5 @@ public class AuthController {
             return new BaseResponse<>(exception.getStatus());
         }
     }
+
 }

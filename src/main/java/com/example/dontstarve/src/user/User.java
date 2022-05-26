@@ -26,8 +26,8 @@ import java.util.Set;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idx")
-    private int idx;
+    @Column(name = "userId")
+    private int userId;
 
     @Column(nullable = false, length = 20)
     private String name; // 이름
