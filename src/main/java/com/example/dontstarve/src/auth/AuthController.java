@@ -41,7 +41,7 @@ public class AuthController {
     public BaseResponse<LoginRes> login(@RequestBody LoginDto loginDto) throws BaseException {
         // validation
         // email 값 존재 검사
-        if (loginDto.getEmail() == null) {
+        if (loginDto.getEmail().equals(null)) {
             return new BaseResponse<>(POST_USERS_EMPTY_EMAIL);
         }
 
@@ -51,10 +51,22 @@ public class AuthController {
 
     /**
      * 소셜로그인 - 인가 코드 받기 (kakao) API
-     * [GET] /auth/kakao
+     * [POST] /auth/kakao
      *
      */
+    @ResponseBody
+    @PostMapping("/kakao")
+    public BaseResponse<LoginRes> kakaoAuthorization() throws Exception, BaseException {
+        try {
+            String code = authService.authorization();
 
+            // TODO : return type refactoring - form(html) or code or redirect url
+            return kakaoToken(code);
+        } catch (BaseException exception) {
+            // TODO : return type refactoring
+            return new BaseResponse<>(exception.getStatus());
+        }
+    }
 
 
 
@@ -65,18 +77,20 @@ public class AuthController {
      */
     @ResponseBody
     @GetMapping("/kakao/token")
-    public BaseResponse<String> kakaoToken(String code) throws BaseException {
+    public BaseResponse<LoginRes> kakaoToken(String code) throws Exception, BaseException {
         try {
             // 토큰 발급
             String accessToken = authService.getKakaoToken(code);
 
-            // 사용자 정보 가져오기 - 회원가입 진행
-            authService.createKakaoUser(accessToken);
+            // 사용자 정보 가져오기 - 회원가입 진행 or 로그인
+            LoginRes loginRes = authService.createKakaoUser(accessToken);
 
-            return new BaseResponse<>("카카오 로그인 성공");
+            // TODO : return type refactoring
+            return new BaseResponse<>(loginRes);
 
-        } catch (Exception exception) {
-            return new BaseResponse<>("카카오 로그인 실패");
+        } catch (BaseException exception) {
+            // TODO : return type refactoring
+            return new BaseResponse<>(exception.getStatus());
         }
     }
 

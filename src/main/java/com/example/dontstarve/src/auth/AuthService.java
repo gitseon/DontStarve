@@ -1,6 +1,7 @@
 package com.example.dontstarve.src.auth;
 
 import com.example.dontstarve.config.BaseException;
+import com.example.dontstarve.config.Constant;
 import com.example.dontstarve.src.auth.model.LoginDto;
 import com.example.dontstarve.src.auth.model.LoginRes;
 import com.example.dontstarve.src.user.User;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Optional;
 
 import static com.example.dontstarve.config.BaseResponseStatus.*;
 
@@ -46,6 +48,7 @@ public class AuthService {
         try {
 
             User user = authRepository.findByEmail(loginDto.getEmail());
+
             if (user.equals(null)) {
                 throw new BaseException(NOT_EXISTS_USER);
             }
@@ -60,6 +63,38 @@ public class AuthService {
         }
     }
 
+    // 소셜 로그인 (카카오) 인가 코드 발급
+    public String authorization() throws IOException {
+        String reqURL = "https://kauth.kakao.com/oauth/authorize";
+        String result = "";
+
+        try {
+            URL url = new URL(reqURL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setDoOutput(true);
+
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()));
+            StringBuilder sb = new StringBuilder();
+            sb.append("&client_id=" + Constant.CLIENT_ID); // TODO REST_API_KEY 입력
+            sb.append("&redirect_uri=" + Constant.LOCAL_URI); // TODO 인가코드 받은 redirect_uri 입력
+            sb.append("&response_type=code");
+            bw.write(sb.toString());
+            bw.flush();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line = "";
+
+            while ((line = br.readLine()) != null) {
+                result += line;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+    
     // 소셜 로그인 (카카오) 토큰 발급
     public String getKakaoToken(String code) throws IOException {
         String access_Token = "";
@@ -78,8 +113,8 @@ public class AuthService {
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()));
             StringBuilder sb = new StringBuilder();
             sb.append("grant_type=authorization_code");
-            sb.append("&client_id="); // TODO REST_API_KEY 입력
-            sb.append("&redirect_uri=https://dev.dogi.shop/auth/kakao/token"); // TODO 인가코드 받은 redirect_uri 입력
+            sb.append("&client_id=" + Constant.CLIENT_ID); // TODO REST_API_KEY 입력
+            sb.append("&redirect_uri=" + Constant.LOCAL_URI); // TODO 인가코드 받은 redirect_uri 입력
             sb.append("&code=" + code);
             bw.write(sb.toString());
             bw.flush();
@@ -87,6 +122,7 @@ public class AuthService {
             //결과 코드가 200이라면 성공
             // int responseCode = conn.getResponseCode();
             // System.out.println("responseCode : " + responseCode);
+
             //요청을 통해 얻은 JSON타입의 Response 메세지 읽어오기
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String line = "";
@@ -108,18 +144,19 @@ public class AuthService {
 
             br.close();
             bw.close();
-        }catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return access_Token;
+        return access_Token + "\n" + refresh_Token;
 
     }
 
     // 소셜 로그인 (카카오) 사용자 정보 가져오기
-    public void createKakaoUser(String token) throws BaseException {
+    public LoginRes createKakaoUser(String token) throws BaseException {
 
         String reqURL = "https://kapi.kakao.com/v2/user/me";
+        String jwt = "";
 
         //access_token을 이용하여 사용자 정보 조회
         try {
@@ -155,22 +192,36 @@ public class AuthService {
             }
 
             boolean hasNickName = element.getAsJsonObject().get("properties").getAsJsonObject().get("has_nickname").getAsBoolean();
-            String nickname;
+            String nickname = "";
             if (hasNickName) {
                 nickname = element.getAsJsonObject().get("properties").getAsJsonObject().get("nickname").getAsString();
             }
 
-            boolean hasAges = element.getAsJsonObject().get("properties").getAsJsonObject().get("has_age_range").getAsBoolean();
+            // boolean hasAges = element.getAsJsonObject().get("properties").getAsJsonObject().get("has_age_range").getAsBoolean();
             //System.out.println("id : " + id);
             //System.out.println("email : " + email);
 
-
             br.close();
 
+            User user = authRepository.findByEmail(email);
+
+            if (user.equals(null)) { // 유저 존재하지 않으면 회원가입
+                user = User.builder()
+                        .email(email)
+                        .name(nickname)
+                        .password("")
+                        .auth("USER")
+                        .build();
+                authRepository.save(user);
+            }
+
+            // 로그인 진행 (유저 이미 존재하면 회원 가입 건너뜀)
+            jwt = jwtTokenProvider.createToken(user.getEmail(), user.getAuth(), user.getUserId());
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return new LoginRes(jwt);
     }
 
 }

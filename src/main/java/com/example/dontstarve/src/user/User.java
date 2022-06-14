@@ -1,5 +1,6 @@
 package com.example.dontstarve.src.user;
 
+import com.example.dontstarve.src.ingredient.Ingredient;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
@@ -12,9 +13,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Getter
@@ -26,8 +25,11 @@ import java.util.Set;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "userId")
+    @Column(name = "user_id")
     private int userId;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    List<Ingredient> ingredients = new ArrayList<Ingredient>();
 
     @Column(nullable = false, length = 20)
     private String name; // 이름

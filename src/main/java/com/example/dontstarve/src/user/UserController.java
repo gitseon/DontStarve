@@ -14,15 +14,20 @@ import org.springframework.web.bind.annotation.*;
 import static com.example.dontstarve.config.BaseResponseStatus.*;
 import static com.example.dontstarve.utils.ValidationRegex.*;
 
-@RequiredArgsConstructor
 @RestController
 @Component
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    public UserController(UserService userService,
+                          JwtTokenProvider jwtTokenProvider) {
+        this.userService = userService;
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
 
     /**
      * 회원가입 API

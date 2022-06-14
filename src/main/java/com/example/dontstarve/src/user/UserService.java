@@ -16,14 +16,17 @@ import java.util.Optional;
 
 import static com.example.dontstarve.config.BaseResponseStatus.*;
 
-@RequiredArgsConstructor
 @Service
-@Component
 @Transactional(rollbackFor = Exception.class)
 public class UserService implements UserDetailsService {
 
-    @Autowired
     private final UserRepository userRepository;
+
+    @Autowired
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
 
     @Override
     public User loadUserByUsername(String email) throws UsernameNotFoundException {
