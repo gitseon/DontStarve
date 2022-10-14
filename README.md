@@ -1,4 +1,4 @@
-## 산학프로젝트I '냉장고를 부탁해'
+## 산학프로젝트 I '냉장고를 부탁해'
 
 **Recipe Recommendation Service**  
 
